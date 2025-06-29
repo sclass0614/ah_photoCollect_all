@@ -543,13 +543,13 @@ async function handleUploadClick() {
 
     let targetFolderId;
     try {
-        updateUploadProgress('날짜 폴더를 확인하고 있습니다...');
-        console.log(`날짜 폴더 확인 중... ${formattedDateForFolderName} 폴더를 찾거나 생성합니다...`);
-        targetFolderId = await findOrCreateDateFolder(GOOGLE_DRIVE_FOLDER_ID, photoDate, tokenObject.access_token);
-        console.log(`날짜 폴더 준비 완료. ${formattedDateForFolderName} 폴더에 업로드합니다.`);
+        updateUploadProgress('카테고리 폴더를 확인하고 있습니다...');
+        console.log(`카테고리 폴더 확인 중... ${category} 폴더를 찾거나 생성합니다...`);
+        targetFolderId = await findOrCreateCategoryFolder(GOOGLE_DRIVE_FOLDER_ID, category, tokenObject.access_token);
+        console.log(`카테고리 폴더 준비 완료. ${category} 폴더에 업로드합니다.`);
         updateUploadProgress('사진 업로드를 시작합니다...');
     } catch (error) {
-        console.error('업로드 중 날짜 폴더 처리 실패:', error);
+        console.error('업로드 중 카테고리 폴더 처리 실패:', error);
         showUploadResultModal("업로드 실패", `❌ 폴더 생성 실패\n업로드 중 오류가 발생했습니다.\n${error.message}`, false);
         hideLoadingOverlay();
         uploadButton.disabled = false;
@@ -595,11 +595,11 @@ async function handleUploadClick() {
     setTimeout(() => {
         // 사용자에게 업로드 결과 알림
         if (successCount === totalFiles) {
-        const successMessage = `🎉 업로드 성공!\n${successCount}개 사진이 '${formattedDateForFolderName}' 폴더에 성공적으로 업로드되었습니다.`;
+        const successMessage = `🎉 업로드 성공!\n${successCount}개 사진이 '${category}' 폴더에 성공적으로 업로드되었습니다.`;
         console.log(successMessage);
         showUploadResultModal("업로드 성공", successMessage, true);
     } else if (successCount > 0) {
-        const partialMessage = `⚠️ 일부 업로드 완료\n성공: ${successCount}개\n실패: ${errorCount}개\n폴더: '${formattedDateForFolderName}'`;
+        const partialMessage = `⚠️ 일부 업로드 완료\n성공: ${successCount}개\n실패: ${errorCount}개\n폴더: '${category}'`;
         console.log(partialMessage);
         showUploadResultModal("일부 업로드 완료", partialMessage, true);
     } else {
