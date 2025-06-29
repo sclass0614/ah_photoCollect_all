@@ -676,25 +676,9 @@ function formatCurrentTimeToYYMMDDHHNNSS() {
 // --- Loading Overlay Functions ---
 function showLoadingOverlay() {
     if (loadingOverlay) {
-        // 스피너 애니메이션 강제 시작
-        const spinner = loadingOverlay.querySelector('.spinner');
-        const spinnerCircles = loadingOverlay.querySelectorAll('.spinner-circle');
-        
         appContent.classList.add('loading');
         loadingOverlay.style.display = 'flex';
-        
-        // 스피너 애니메이션 클래스 추가 (강제 트리거)
-        if (spinner) {
-            spinner.style.animation = 'spin 2s linear infinite';
-        }
-        
-        // 각 서클에 펄스 애니메이션 적용
-        spinnerCircles.forEach((circle, index) => {
-            circle.style.animation = `pulse 1.5s ease-in-out ${index * 0.3}s infinite`;
-        });
-        
         updateUploadProgress('사진을 업로드하고 있습니다.');
-        console.log('스피너 표시 및 애니메이션 시작');
     }
 }
 
@@ -702,20 +686,6 @@ function hideLoadingOverlay() {
     if (loadingOverlay) {
         appContent.classList.remove('loading');
         loadingOverlay.style.display = 'none';
-        
-        // 스피너 애니메이션 정리
-        const spinner = loadingOverlay.querySelector('.spinner');
-        const spinnerCircles = loadingOverlay.querySelectorAll('.spinner-circle');
-        
-        if (spinner) {
-            spinner.style.animation = '';
-        }
-        
-        spinnerCircles.forEach(circle => {
-            circle.style.animation = '';
-        });
-        
-        console.log('스피너 숨김 및 애니메이션 정리');
     }
 }
 
