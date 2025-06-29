@@ -555,7 +555,7 @@ async function handleUploadClick() {
         const file = capturedPhotos[i];
         const originalExtension = getFileExtension(file.name) || (file.type === 'image/jpeg' ? '.jpg' : (file.type === 'image/png' ? '.png' : '.dat'));
         
-                let finalName = `${category}_${formattedDateForFileName}_${baseFileName}`;
+                let finalName = `${category}_${formattedDateForFileName}_${baseFileName}_${uploadTimeForFileName}`;
         if (totalFiles > 1) {
             finalName += ` (${i + 1})${originalExtension}`;
         } else {
