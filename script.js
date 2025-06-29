@@ -5,7 +5,7 @@ const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/r
 const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive';
 
 // --- Fixed Google Drive Folder ID ---
-const GOOGLE_DRIVE_FOLDER_ID = '1A2D7QtKPIG16jKD2HFaM_hyyyXHtEXEd'; // 구글 드라이브 폴더 ID
+const GOOGLE_DRIVE_FOLDER_ID = '1w7QhyzK6ezqsHGF_fbg7uB5q8HpjB50K'; // 구글 드라이브 폴더 ID
 
 // --- DOM Elements ---
 const authorizeButton = document.getElementById('authorize_button');
