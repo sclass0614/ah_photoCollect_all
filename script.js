@@ -17,6 +17,8 @@ const photoDateInput = document.getElementById('photoDate');
 const categorySelect = document.getElementById('categorySelect');
 const uploadButton = document.getElementById('uploadButton');
 const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const uploadProgress = document.getElementById('uploadProgress');
 
 // 카메라 관련 DOM 요소 (모바일/태블릿 전용)
 const smartCameraButton = document.getElementById('smartCameraButton');
@@ -527,11 +529,12 @@ async function handleUploadClick() {
 
         const tokenObject = gapi.client.getToken();
 
-    const formattedDateForFileName = formatDateToYYYYMMDD(photoDate); // 파일명용 날짜
-    const uploadTimeForFileName = formatCurrentTimeToYYMMDDHHNNSS();
+    const formattedDateForFolderName = formatDateToYYYYMMDD(photoDate);
+    const formattedDateForFileName = formatDateToYYYYMMDD(photoDate); // 파일명용 날짜 (동일하게 사용)
+    const uploadTimeForFileName = formatCurrentTimeToYYMMDDHHNNSS();
 
-        console.log(`${capturedPhotos.length}개 사진 업로드 준비 중...`);
-    appContent.classList.add('loading');
+                console.log(`${capturedPhotos.length}개 사진 업로드 준비 중...`);
+    showLoadingOverlay();
     uploadButton.disabled = true;
 
     let successCount = 0;
@@ -540,13 +543,15 @@ async function handleUploadClick() {
 
     let targetFolderId;
     try {
-        console.log(`카테고리 폴더 확인 중... ${category} 폴더를 찾거나 생성합니다...`);
-        targetFolderId = await findOrCreateCategoryFolder(GOOGLE_DRIVE_FOLDER_ID, category, tokenObject.access_token);
-        console.log(`카테고리 폴더 준비 완료. ${category} 폴더에 업로드합니다.`);
+        updateUploadProgress('날짜 폴더를 확인하고 있습니다...');
+        console.log(`날짜 폴더 확인 중... ${formattedDateForFolderName} 폴더를 찾거나 생성합니다...`);
+        targetFolderId = await findOrCreateDateFolder(GOOGLE_DRIVE_FOLDER_ID, photoDate, tokenObject.access_token);
+        console.log(`날짜 폴더 준비 완료. ${formattedDateForFolderName} 폴더에 업로드합니다.`);
+        updateUploadProgress('사진 업로드를 시작합니다...');
     } catch (error) {
-        console.error('업로드 중 카테고리 폴더 처리 실패:', error);
+        console.error('업로드 중 날짜 폴더 처리 실패:', error);
         showUploadResultModal("업로드 실패", `❌ 폴더 생성 실패\n업로드 중 오류가 발생했습니다.\n${error.message}`, false);
-        appContent.classList.remove('loading');
+        hideLoadingOverlay();
         uploadButton.disabled = false;
         return;
     }
@@ -555,18 +560,19 @@ async function handleUploadClick() {
         const file = capturedPhotos[i];
         const originalExtension = getFileExtension(file.name) || (file.type === 'image/jpeg' ? '.jpg' : (file.type === 'image/png' ? '.png' : '.dat'));
         
-                let finalName = `${category}_${formattedDateForFileName}_${baseFileName}_${uploadTimeForFileName}`;
-        if (totalFiles > 1) {
-            finalName += ` (${i + 1})${originalExtension}`;
-        } else {
-            finalName += originalExtension;
-        }
+        let finalName = `${formattedDateForFileName}_${baseFileName}_${uploadTimeForFileName}`;
+        if (totalFiles > 1) {
+            finalName += ` (${i + 1})${originalExtension}`;
+        } else {
+            finalName += originalExtension;
+        }
         
-                console.log(`업로드 중: ${i + 1} / ${totalFiles} - ${finalName} (진행률: ${((i / totalFiles) * 100).toFixed(0)}%)`);
-        
-        try {
+                        updateUploadProgress(`사진 업로드 중`, i + 1, totalFiles);
+        console.log(`업로드 중: ${i + 1} / ${totalFiles} - ${finalName} (진행률: ${((i / totalFiles) * 100).toFixed(0)}%)`);
+        
+        try {
             console.log(`%c[파일 업로드 시작 ${i+1}/${totalFiles}]`, "font-weight:bold;", `이름: ${finalName}, 대상 폴더 ID: ${targetFolderId}`);
-            const uploadedFile = await uploadSingleFileToDrive(file, finalName, targetFolderId, tokenObject.access_token);
+            const uploadedFile = await uploadSingleFileToDrive(file, finalName, targetFolderId, tokenObject.access_token);
             if (uploadedFile && uploadedFile.id) {
                 successCount++;
                 console.log(`%c[업로드 성공 ${i+1}]`, "color:green", `${finalName} (ID: ${uploadedFile.id})`);
@@ -582,15 +588,18 @@ async function handleUploadClick() {
     }
 
         // 최종 결과 표시
+    updateUploadProgress(`업로드 완료! (${totalFiles}개 중 ${successCount}개 성공)`);
     console.log(`업로드 완료 (${totalFiles}개 중 ${successCount}개 성공)`);
     
-    // 사용자에게 업로드 결과 알림
-    if (successCount === totalFiles) {
-        const successMessage = `🎉 업로드 성공!\n${successCount}개 사진이 '${category}' 폴더에 성공적으로 업로드되었습니다.`;
+    // 잠시 대기 후 결과 표시
+    setTimeout(() => {
+        // 사용자에게 업로드 결과 알림
+        if (successCount === totalFiles) {
+        const successMessage = `🎉 업로드 성공!\n${successCount}개 사진이 '${formattedDateForFolderName}' 폴더에 성공적으로 업로드되었습니다.`;
         console.log(successMessage);
         showUploadResultModal("업로드 성공", successMessage, true);
     } else if (successCount > 0) {
-        const partialMessage = `⚠️ 일부 업로드 완료\n성공: ${successCount}개\n실패: ${errorCount}개\n폴더: '${category}'`;
+        const partialMessage = `⚠️ 일부 업로드 완료\n성공: ${successCount}개\n실패: ${errorCount}개\n폴더: '${formattedDateForFolderName}'`;
         console.log(partialMessage);
         showUploadResultModal("일부 업로드 완료", partialMessage, true);
     } else {
@@ -606,8 +615,9 @@ async function handleUploadClick() {
         fileNameInput.value = ''; // 파일명 input도 초기화
     }
     
-    appContent.classList.remove('loading');
-    uploadButton.disabled = false;
+        hideLoadingOverlay();
+    uploadButton.disabled = false;
+    }, 1000); // setTimeout 종료
 }
 
 async function uploadSingleFileToDrive(fileObject, targetFileName, parentFolderId, accessToken) {
@@ -659,6 +669,34 @@ function formatCurrentTimeToYYMMDDHHNNSS() {
     const minute = String(now.getMinutes()).padStart(2, '0');
     const second = String(now.getSeconds()).padStart(2, '0');
     return `${year}${month}${day}${hour}${minute}${second}`;
+}
+
+
+
+// --- Loading Overlay Functions ---
+function showLoadingOverlay() {
+    if (loadingOverlay) {
+        appContent.classList.add('loading');
+        loadingOverlay.style.display = 'flex';
+        updateUploadProgress('사진을 업로드하고 있습니다.');
+    }
+}
+
+function hideLoadingOverlay() {
+    if (loadingOverlay) {
+        appContent.classList.remove('loading');
+        loadingOverlay.style.display = 'none';
+    }
+}
+
+function updateUploadProgress(message, currentFile = null, totalFiles = null) {
+    if (uploadProgress) {
+        let progressText = message;
+        if (currentFile && totalFiles) {
+            progressText += ` (${currentFile}/${totalFiles})`;
+        }
+        uploadProgress.textContent = progressText;
+    }
 }
 
 
