@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>구글 드라이브 사진관리</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+
+</head>
+<body>
+    <header>
+        <h1>구글 드라이브 사진 관리</h1>
+        <div class="auth-buttons">
+            <button id="authorize_button">Google Drive 로그인</button>
+            <button id="signout_button" style="display: none;">Google Drive 로그아웃</button>
+        </div>
+    </header>
+
+    <main>
+
+        <section id="app_content">
+            <!-- 카메라 섹션 (모바일/태블릿 전용) -->
+            <div class="camera-section">
+                <div class="camera-header">
+                    <h2><i class="fas fa-camera"></i> 사진 촬영</h2>
+                    <button id="smartCameraButton">사진 촬영</button>
+                </div>
+                <input type="file" id="nativeCameraInput" accept="image/*" capture="environment" style="display: none;" multiple>
+            </div>
+
+            <!-- 사진 미리보기 -->
+            <div class="preview-section">
+                <div class="preview-header">
+                    <h2><i class="fas fa-images"></i> 사진 미리보기</h2>
+                    <button id="clearPhotosButton">사진 삭제</button>
+                </div>
+                <div id="imagePreviewContainer">
+                </div>
+            </div>
+
+            <!-- 파일 선택 섹션 (기존 기능 유지) -->
+            <div class="file-section">
+                <h2 class="toggle-header" onclick="toggleFileSection()">
+                    <i class="fas fa-folder"></i> 파일 선택 
+                    <span class="toggle-icon collapsed" id="fileToggleIcon">▶</span>
+                </h2>
+                <div class="file-content collapsed" id="fileContent">
+                    <div class="form-group">
+                        <label for="fileInput">사진 파일 선택 (여러 장 가능):</label>
+                        <input type="file" id="fileInput" accept="image/*" multiple>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 파일명 설정 및 업로드 -->
+            <div class="upload-section">
+                <div class="date-input-group">
+                    <div class="form-group">
+                        <label for="categorySelect"><i class="fas fa-tags"></i> 카테고리 (필수):</label>
+                        <select id="categorySelect" required>
+                            <option value="활동사진" selected>활동사진</option>
+                            <option value="증빙사진">증빙사진</option>
+                            <option value="기타사진">기타사진</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="photoDate"><i class="fas fa-calendar-alt"></i> 촬영 날짜 (필수):</label>
+                        <input type="date" id="photoDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fileName"><i class="fas fa-edit"></i> 파일명 (필수):</label>
+                        <input type="text" id="fileName" placeholder="EX) 생계비" required>
+                    </div>
+                </div>
+                <div class="help-text">"카테고리_촬영날짜_파일명"으로 저장됩니다. 파일명은 금액_구매처_물품 등 구분이 용이하도록 입력하세요.</div>
+
+                <button id="uploadButton">사진 업로드</button>
+            </div>
+        </section>
+
+
+
+    </main>
+
+    <!-- Custom Confirm Modal -->
+    <div id="customConfirmModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle"><i class="fas fa-question-circle"></i> 확인</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">정말로 실행하시겠습니까?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmCancelBtn" class="modal-btn cancel-btn">취소</button>
+                <button id="confirmOkBtn" class="modal-btn confirm-btn">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 사진 촬영 & 구글 드라이브 업로드 도우미</p>
+    </footer>
+
+    <!-- JavaScript 파일을 먼저 로드 -->
+    <script src="script.js"></script>
+    <!-- 그 다음 Google API 스크립트들 로드 -->
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+    
+</body>
+</html>
